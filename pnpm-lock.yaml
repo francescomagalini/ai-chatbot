@@ -17,6 +17,9 @@ importers:
       '@ai-sdk/react':
         specifier: 2.0.0-beta.6
         version: 2.0.0-beta.6(react@19.1.1)(zod@4.0.13)
+      '@ameide/sdk':
+        specifier: file:/Users/francesco/Repositories/ameide-core/packages/core-sdk-ts
+        version: file:../ameide-core/packages/core-sdk-ts(@connectrpc/connect@1.6.1(@bufbuild/protobuf@1.10.1))
       '@codemirror/lang-javascript':
         specifier: ^6.2.4
         version: 6.2.4
@@ -324,6 +327,12 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
+  '@ameide/sdk@file:../ameide-core/packages/core-sdk-ts':
+    resolution: {directory: ../ameide-core/packages/core-sdk-ts, type: directory}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@connectrpc/connect': ^1.4.0
+
   '@auth/core@0.37.2':
     resolution: {integrity: sha512-kUvzyvkcd6h1vpeMAojK2y7+PAV5H+0Cc9+ZlKYDFhDY31AlvsB+GW5vNO4qE3Y07KeQgvNO9U0QUx/fN62kBw==}
     peerDependencies:
@@ -410,6 +419,9 @@ packages:
   '@bpmn-io/properties-panel@3.31.0':
     resolution: {integrity: sha512-7GhIhSSAW/E3jGTu4EOvqf403BLqKfKwoDOw7eh6dbrQHZPyh7eypnd9u4SaWKgW6o5ZWTqhEXrfIG5EmVkxZg==}
 
+  '@bufbuild/protobuf@1.10.1':
+    resolution: {integrity: sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ==}
+
   '@camunda/feel-builtins@0.2.0':
     resolution: {integrity: sha512-Jusm8x3Onqze9E5Y0lGGdPj66bnFKLYNwDz+uG4otsEXgSL0FpF+koGHK48LkF9Jqo67KaP1y3zr2y/HIWRePw==}
 
@@ -442,6 +454,11 @@ packages:
 
   '@codemirror/view@6.38.1':
     resolution: {integrity: sha512-RmTOkE7hRU3OVREqFVITWHz6ocgBjv08GoePscAakgVQfciA3SGCEk7mb9IzwW61cKKmlTpHXG6DUE5Ubx+MGQ==}
+
+  '@connectrpc/connect@1.6.1':
+    resolution: {integrity: sha512-KchMDNtU4CDTdkyf0qG7ugJ6qHTOR/aI7XebYn3OTCNagaDYWiZUVKgRgwH79yeMkpNgvEUaXSK7wKjaBK9b/Q==}
+    peerDependencies:
+      '@bufbuild/protobuf': ^1.10.0
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -4197,6 +4214,11 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
+  '@ameide/sdk@file:../ameide-core/packages/core-sdk-ts(@connectrpc/connect@1.6.1(@bufbuild/protobuf@1.10.1))':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
+      '@connectrpc/connect': 1.6.1(@bufbuild/protobuf@1.10.1)
+
   '@auth/core@0.37.2':
     dependencies:
       '@panva/hkdf': 1.2.1
@@ -4286,6 +4308,8 @@ snapshots:
       min-dash: 4.2.3
       min-dom: 4.2.1
 
+  '@bufbuild/protobuf@1.10.1': {}
+
   '@camunda/feel-builtins@0.2.0': {}
 
   '@codemirror/autocomplete@6.18.6':
@@ -4358,6 +4382,10 @@ snapshots:
       crelt: 1.0.6
       style-mod: 4.1.2
       w3c-keyname: 2.2.8
+
+  '@connectrpc/connect@1.6.1(@bufbuild/protobuf@1.10.1)':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
 
   '@drizzle-team/brocli@0.10.2': {}
 

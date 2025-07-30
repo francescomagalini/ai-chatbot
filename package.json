@@ -23,6 +23,7 @@
     "@ai-sdk/openai": "2.0.0-beta.2",
     "@ai-sdk/provider": "2.0.0-beta.1",
     "@ai-sdk/react": "2.0.0-beta.6",
+    "@ameide/sdk": "file:/Users/francesco/Repositories/ameide-core/packages/core-sdk-ts",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/state": "^6.5.2",
