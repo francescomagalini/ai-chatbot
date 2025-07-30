@@ -1,10 +1,23 @@
 "use client";
 
+// Note: BPMN-js does NOT work with Turbopack due to module resolution issues.
+// This implementation only works with webpack.
+// To use BPMN artifacts:
+// 1. Use `pnpm dev:webpack` for development (NOT `pnpm dev`)
+// 2. Or use `pnpm build && pnpm start` for production
+// See: https://github.com/bpmn-io/diagram-js/issues/661
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Artifact } from "@/components/create-artifact";
 import { toast } from "sonner";
-import BpmnModeler from "bpmn-js/lib/Modeler"; // ESM import - no aliases needed
+// Dynamic import to avoid Turbopack module issues
+let BpmnModeler: any;
 import useSWR from "swr";
+
+// Import BPMN.js CSS
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 
 interface BpmnMetadata {
   lastSaved: string;
@@ -59,7 +72,7 @@ export const bpmnArtifact = new Artifact<"bpmn", BpmnMetadata>({
     metadata,
   }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const modelerRef = useRef<BpmnModeler | null>(null);
+    const modelerRef = useRef<any | null>(null);
     const [lastCommandIdx, setLastCommandIdx] = useState(0);
 
     // Command capture for event sourcing (future implementation)
@@ -134,14 +147,28 @@ export const bpmnArtifact = new Artifact<"bpmn", BpmnMetadata>({
     useEffect(() => {
       if (!containerRef.current || modelerRef.current) return;
 
-      const modeler = new BpmnModeler({ 
-        container: containerRef.current,
-        keyboard: {
-          bindTo: window,
-        },
-      });
-      
-      modelerRef.current = modeler;
+      const initModeler = async () => {
+        // Dynamic import to avoid Turbopack bundling issues
+        if (!BpmnModeler) {
+          try {
+            // Use the pre-built bundle to avoid module resolution issues
+            const module = await import('bpmn-js/dist/bpmn-modeler.development.js');
+            BpmnModeler = module.default || (window as any).BpmnJS?.Modeler;
+            console.log("BpmnModeler loaded:", typeof BpmnModeler, BpmnModeler);
+          } catch (importError) {
+            console.error("Failed to import BpmnModeler:", importError);
+            throw new Error("Could not load BPMN modeler");
+          }
+        }
+
+        const modeler = new BpmnModeler({ 
+          container: containerRef.current,
+          width: '100%',
+          height: '100%'
+        });
+        
+        modelerRef.current = modeler;
+        console.log("Modeler created with container:", containerRef.current);
       
       // Phase 2: Set up SWR polling for collaboration
       // const { data: remoteEvents } = useSWR(
@@ -157,7 +184,6 @@ export const bpmnArtifact = new Artifact<"bpmn", BpmnMetadata>({
       });
 
       // Handle save with change detection
-      const keyboard = modeler.get("keyboard");
       const saveHandler = (e: KeyboardEvent) => {
         if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
@@ -189,20 +215,55 @@ export const bpmnArtifact = new Artifact<"bpmn", BpmnMetadata>({
       // Import initial content
       const importDiagram = async () => {
         try {
-          await modeler.importXML(content || DEFAULT_TEMPLATE_XML);
+          // Add a small delay to ensure modeler is fully initialized
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          const xmlContent = content || DEFAULT_TEMPLATE_XML;
+          console.log("Importing BPMN XML:", xmlContent.substring(0, 200));
+          
+          await modeler.importXML(xmlContent);
+          console.log("BPMN import successful");
         } catch (error: any) {
-          toast.error(`Failed to load diagram: ${error.message?.substring(0, 100)}`);
-          console.error("Import error:", error);
+          console.error("BPMN Import error details:", {
+            message: error.message,
+            stack: error.stack,
+            xml: (content || DEFAULT_TEMPLATE_XML).substring(0, 500)
+          });
+          
+          // Try with a minimal diagram as fallback
+          try {
+            const minimalXML = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_1">
+  <bpmn:process id="Process_1" />
+</bpmn:definitions>`;
+            await modeler.importXML(minimalXML);
+            toast.warning("Loaded minimal diagram due to import error");
+          } catch (fallbackError: any) {
+            toast.error(`Failed to load diagram: ${error.message?.substring(0, 100)}`);
+            console.error("Fallback import also failed:", fallbackError);
+          }
         }
       };
       
       importDiagram();
 
+        // Store cleanup function reference
+        (window as any).__bpmnSaveHandler = saveHandler;
+      };
+
+      initModeler();
+
       // Cleanup
       return () => {
-        window.removeEventListener('keydown', saveHandler);
-        modeler.destroy();
-        modelerRef.current = null;
+        const handler = (window as any).__bpmnSaveHandler;
+        if (handler) {
+          window.removeEventListener('keydown', handler);
+          delete (window as any).__bpmnSaveHandler;
+        }
+        if (modelerRef.current) {
+          modelerRef.current.destroy();
+          modelerRef.current = null;
+        }
       };
     }, []); // Only run once
 
@@ -232,10 +293,14 @@ export const bpmnArtifact = new Artifact<"bpmn", BpmnMetadata>({
     }
 
     return (
-      <div className="relative h-full w-full">
-        <div ref={containerRef} className="h-full w-full bg-white dark:bg-gray-50" />
+      <div className="relative h-full w-full overflow-hidden">
+        <div 
+          ref={containerRef} 
+          className="h-full w-full bg-white dark:bg-gray-50" 
+          style={{ minHeight: '400px' }}
+        />
         {isCurrentVersion && (
-          <span className="absolute bottom-2 right-4 text-xs text-zinc-500">
+          <span className="absolute bottom-2 right-4 text-xs text-zinc-500 z-10">
             Last saved {new Date(metadata?.lastSaved || Date.now()).toLocaleString()}
           </span>
         )}

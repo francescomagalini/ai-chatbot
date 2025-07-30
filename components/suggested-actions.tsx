@@ -39,12 +39,22 @@ function PureSuggestedActions({
       label: 'in San Francisco?',
       action: 'What is the weather in San Francisco?',
     },
+    {
+      title: 'Help me create',
+      label: 'a simple BPMN diagram',
+      action: 'Help me create a simple BPMN diagram',
+    },
+    {
+      title: 'Help me create',
+      label: 'an ArchiMate diagram',
+      action: 'Help me create an ArchiMate diagram',
+    },
   ];
 
   return (
     <div
       data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
+      className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full"
     >
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
@@ -53,7 +63,13 @@ function PureSuggestedActions({
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.05 * index }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
+          className={
+            index > 1 
+              ? index > 3 
+                ? 'hidden lg:block' 
+                : 'hidden sm:block' 
+              : 'block'
+          }
         >
           <Button
             variant="ghost"
